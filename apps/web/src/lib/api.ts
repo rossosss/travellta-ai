@@ -1,28 +1,39 @@
 import type { ChatMessage } from '@/types/chat';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+/** Базовый URL API: в TG Mini App всегда текущий домен, если env не задан или localhost */
+function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const env = process.env.NEXT_PUBLIC_API_URL;
+    if (env && !env.includes('localhost') && !env.includes('127.0.0.1')) {
+      return env.replace(/\/$/, '');
+    }
+    return window.location.origin;
+  }
+  return (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+}
+
+function getInitData(): string {
+  if (typeof window === 'undefined') return '';
+  return window.Telegram?.WebApp?.initData ?? '';
+}
 
 function getHeaders(): HeadersInit {
-  const initData =
-    typeof window !== 'undefined'
-      ? window.Telegram?.WebApp?.initData ?? ''
-      : '';
-
   return {
     'Content-Type': 'application/json',
-    'X-Telegram-Init-Data': initData,
+    'X-Telegram-Init-Data': getInitData(),
   };
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}/api${path}`, {
+  const url = `${getApiBaseUrl()}/api${path}`;
+  const res = await fetch(url, {
     ...options,
     headers: { ...getHeaders(), ...options?.headers },
   });
 
   if (!res.ok) {
     const error = await res.text();
-    throw new Error(error || `Request failed: ${res.status}`);
+    throw new Error(error || `Request failed: ${res.status} ${url}`);
   }
 
   return res.json();

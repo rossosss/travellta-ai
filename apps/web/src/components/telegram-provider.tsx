@@ -39,6 +39,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
       try {
         const WebApp = (await import('@twa-dev/sdk')).default;
         WebApp.ready();
+        // api.ts читает initData из window.Telegram.WebApp
+        window.Telegram = { WebApp };
         WebApp.expand();
         WebApp.setHeaderColor('#0c4a6e');
         WebApp.setBackgroundColor('#f0f9ff');

@@ -100,14 +100,21 @@ export function ChatContainer() {
       const res = await api.sendMessage(content, sessionId);
       persistSession(res.sessionId);
       setMessages((prev) => [...prev, res.message]);
-    } catch {
+    } catch (err) {
+      console.error('chat send failed', err);
+      const hint =
+        err instanceof Error && err.message.includes('401')
+          ? 'Ошибка авторизации Telegram. Проверьте TELEGRAM_BOT_TOKEN на сервере.'
+          : err instanceof Error && err.message.includes('localhost')
+            ? 'Фронтенд стучится в localhost — пересоберите web (npm run build -w @travellta/web).'
+            : 'Не удалось обработать запрос. Попробуйте ещё раз.';
       setMessages((prev) => [
         ...prev,
         {
           id: `err-${Date.now()}`,
           role: 'assistant',
           type: 'text',
-          content: 'Не удалось обработать запрос. Попробуйте ещё раз.',
+          content: hint,
         },
       ]);
     } finally {
