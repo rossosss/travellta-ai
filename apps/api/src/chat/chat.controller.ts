@@ -21,6 +21,18 @@ interface AuthRequest {
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @Get('sessions')
+  async listSessions(@Req() req: AuthRequest) {
+    const user = await this.chatService.getOrCreateUser(req.telegramUser);
+    return this.chatService.listSessions(user.id);
+  }
+
+  @Post('sessions')
+  async createSession(@Req() req: AuthRequest) {
+    const user = await this.chatService.getOrCreateUser(req.telegramUser);
+    return this.chatService.createSession(user.id);
+  }
+
   @Get('latest')
   async getLatest(@Req() req: AuthRequest) {
     const user = await this.chatService.getOrCreateUser(req.telegramUser);

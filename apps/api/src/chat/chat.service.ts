@@ -68,6 +68,67 @@ export class ChatService {
     return this.getSessionHistory(session.id, userId);
   }
 
+  async listSessions(userId: string, limit = 40) {
+    const sessions = await this.sessionsRepo.find({
+      where: { userId },
+      order: { updatedAt: 'DESC' },
+      take: limit * 2,
+    });
+
+    const items: Array<{
+      sessionId: string;
+      title: string;
+      preview: string;
+      updatedAt: Date;
+      mode: string;
+    }> = [];
+
+    for (const session of sessions) {
+      if (items.length >= limit) break;
+
+      const firstUser = await this.messagesRepo.findOne({
+        where: { sessionId: session.id, role: 'user' },
+        order: { createdAt: 'ASC' },
+      });
+      if (!firstUser) continue;
+
+      const title =
+        session.title ?? this.truncateText(firstUser.content, 60);
+      items.push({
+        sessionId: session.id,
+        title,
+        preview: this.truncateText(firstUser.content, 100),
+        updatedAt: session.updatedAt,
+        mode: session.mode,
+      });
+    }
+
+    return { sessions: items };
+  }
+
+  async createSession(userId: string) {
+    const session = this.sessionsRepo.create({
+      userId,
+      mode: 'chat',
+      context: {},
+    });
+    const saved = await this.sessionsRepo.save(session);
+    return { sessionId: saved.id };
+  }
+
+  private truncateText(text: string, max: number): string {
+    const t = text.replace(/\s+/g, ' ').trim();
+    return t.length <= max ? t : `${t.slice(0, max - 1)}…`;
+  }
+
+  private async ensureSessionTitle(sessionId: string, content: string) {
+    const session = await this.sessionsRepo.findOne({ where: { id: sessionId } });
+    if (!session || session.title) return;
+    await this.sessionsRepo.update(sessionId, {
+      title: this.truncateText(content, 60),
+    });
+  }
+
   async getSessionHistory(sessionId: string, userId: string) {
     const session = await this.sessionsRepo.findOne({
       where: { id: sessionId, userId },
@@ -83,6 +144,8 @@ export class ChatService {
     return {
       sessionId: session.id,
       mode: session.mode,
+      title: session.title,
+      updatedAt: session.updatedAt,
       messages: messages
         .filter((m) => m.type !== 'loading')
         .map((m) => ({
@@ -106,6 +169,7 @@ export class ChatService {
     const session = await this.getOrCreateSession(user.id, sessionId, mode);
 
     await this.saveMessage(session.id, 'user', 'text', content);
+    await this.ensureSessionTitle(session.id, content);
 
     const context = (session.context ?? {}) as Record<string, unknown>;
     const parsed = await this.intentParser.parse(content, context);

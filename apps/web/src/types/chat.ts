@@ -1,3 +1,11 @@
+export interface ChatSessionSummary {
+  sessionId: string;
+  title: string;
+  preview: string;
+  updatedAt: string;
+  mode: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
