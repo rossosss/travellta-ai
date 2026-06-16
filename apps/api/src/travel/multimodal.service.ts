@@ -24,6 +24,7 @@ import {
   TravelPreferences,
 } from './travel.types';
 import { TravelpayoutsService } from './travelpayouts.service';
+import { GeocodingService, GeocodedPlace } from './geocoding.service';
 
 interface ResolvedOrigin {
   name: string;
@@ -31,13 +32,42 @@ interface ResolvedOrigin {
   hasAirport: boolean;
   airportCode?: string;
   isSettlement: boolean;
+  geocoded?: GeocodedPlace;
 }
 
 @Injectable()
 export class MultimodalService {
-  constructor(private readonly travelpayouts: TravelpayoutsService) {}
+  constructor(
+    private readonly travelpayouts: TravelpayoutsService,
+    private readonly geocoding: GeocodingService,
+  ) {}
 
-  resolveOrigin(preferences: TravelPreferences): ResolvedOrigin | null {
+  async resolveOriginAsync(
+    preferences: TravelPreferences,
+  ): Promise<ResolvedOrigin | null> {
+    const sync = this.resolveOriginSync(preferences);
+    const needsGeocode =
+      preferences.origin &&
+      (!sync?.nodeId ||
+        sync.nodeId.startsWith('settlement-') ||
+        (sync.isSettlement && !getNodeById(sync.nodeId ?? '')));
+
+    if (needsGeocode) {
+      const geocoded = await this.geocoding.resolvePlace(preferences.origin!);
+      if (geocoded) {
+        return {
+          name: geocoded.displayName,
+          isSettlement: true,
+          hasAirport: false,
+          geocoded,
+        };
+      }
+    }
+
+    return sync;
+  }
+
+  resolveOriginSync(preferences: TravelPreferences): ResolvedOrigin | null {
     const graphNode = resolveRouteNode(preferences.origin);
     if (graphNode) {
       return {
@@ -81,11 +111,22 @@ export class MultimodalService {
     dateTo: string,
     direction: 'outbound' | 'inbound',
   ): Promise<TransportRoute[]> {
-    const origin = this.resolveOrigin(preferences);
+    const origin = await this.resolveOriginAsync(preferences);
     if (!origin) return [];
 
     const date = direction === 'outbound' ? dateFrom : dateTo;
     const isInternational = !this.isDomesticCode(destinationCode);
+
+    if (origin.geocoded) {
+      return this.buildGeocodedNavigatorRoutes(
+        origin,
+        destinationCode,
+        destinationName,
+        date,
+        direction,
+        isInternational,
+      );
+    }
 
     if (origin.nodeId && (origin.isSettlement || !origin.hasAirport)) {
       return this.buildNavigatorRoutes(
@@ -167,6 +208,91 @@ export class MultimodalService {
       const scoreB = (b.tag === 'recommended' ? 0 : 1) + b.totalPrice / 100000;
       return scoreA - scoreB;
     });
+  }
+
+  /** OSM: любой населённый пункт → ближайшие хабы → перелёт */
+  private async buildGeocodedNavigatorRoutes(
+    origin: ResolvedOrigin,
+    destinationCode: string,
+    destinationName: string,
+    date: string,
+    direction: 'outbound' | 'inbound',
+    isInternational: boolean,
+  ): Promise<TransportRoute[]> {
+    const geocoded = origin.geocoded!;
+    const routes: TransportRoute[] = [];
+
+    for (const hub of geocoded.nearestHubs) {
+      if (!getNodeById(hub.id)) continue;
+
+      const hubOrigin: ResolvedOrigin = {
+        name: hub.name,
+        nodeId: hub.id,
+        hasAirport: Boolean(hub.airportCode),
+        airportCode: hub.airportCode,
+        isSettlement: false,
+      };
+
+      const hubRoutes = await this.buildNavigatorRoutes(
+        hubOrigin,
+        destinationCode,
+        destinationName,
+        date,
+        direction,
+        isInternational,
+      );
+
+      const lastMileOptions = this.geocoding.buildLastMileSegments(origin.name, hub);
+
+      for (const lastMile of lastMileOptions) {
+        for (const route of hubRoutes.slice(0, 2)) {
+          routes.push(
+            this.prependLastMileRoute(route, lastMile, origin.name, hub.name, date),
+          );
+        }
+      }
+    }
+
+    if (!routes.length) {
+      return this.buildFallbackHubRoutes(origin, destinationCode, destinationName, date, direction);
+    }
+
+    return this.tagRoutes(routes).sort((a, b) => a.totalPrice - b.totalPrice);
+  }
+
+  private prependLastMileRoute(
+    route: TransportRoute,
+    seg: SegmentTemplate,
+    fromName: string,
+    toName: string,
+    date: string,
+  ): TransportRoute {
+    const leg: TransportLeg = {
+      id: uuidv4(),
+      mode: seg.mode === 'suburban' || seg.mode === 'local' ? seg.mode : seg.mode,
+      from: fromName,
+      to: toName,
+      duration: seg.durationMin,
+      price: seg.priceFrom,
+      carrier: seg.carrier,
+      description: seg.description,
+      scheduleHint: seg.scheduleHint,
+      convenience: seg.convenience,
+      stage: 'local',
+      bookingUrl: tutuUrl(fromName, toName),
+      note: 'Маршрут по OSM · расстояние оценочное',
+    };
+
+    return {
+      ...route,
+      id: uuidv4(),
+      label: `${seg.label} · ${route.label}`,
+      summary: `${fromName} → ${seg.label} → ${route.summary}`,
+      legs: [leg, ...route.legs],
+      totalPrice: route.totalPrice + seg.priceFrom,
+      totalDuration: route.totalDuration + seg.durationMin,
+      variantVia: route.variantVia,
+    };
   }
 
   private composeNavigatorRoute(

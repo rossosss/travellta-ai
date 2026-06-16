@@ -82,4 +82,12 @@ export const api = {
   getPopularRoutes() {
     return request<{ routes: import('@/types/chat').PopularRoute[] }>('/travel/popular');
   },
+
+  listSessions() {
+    return request<{ sessions: import('@/types/chat').ChatSessionSummary[] }>('/chat/sessions');
+  },
+
+  createSession() {
+    return request<{ sessionId: string }>('/chat/sessions', { method: 'POST', body: '{}' });
+  },
 };

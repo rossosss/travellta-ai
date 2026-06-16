@@ -26,6 +26,10 @@ export class ChatSession {
   @Column({ type: 'varchar', default: 'chat' })
   mode: SessionMode;
 
+  /** Заголовок чата (как в ChatGPT — из первого сообщения) */
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  title?: string;
+
   @Column({ type: 'jsonb', nullable: true })
   context: Record<string, unknown>;
 
