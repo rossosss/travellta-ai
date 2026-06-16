@@ -155,6 +155,7 @@ export class IntentParserService {
     const lower = text.toLowerCase();
 
     // Правила из текста важнее LLM — явный «из пос. Целина» не должен стать «Москва»
+    this.extractDestination(lower, enriched);
     this.extractOrigin(lower, enriched);
     this.applyOriginMeta(enriched);
 
@@ -201,7 +202,7 @@ export class IntentParserService {
 
   private extractDestination(text: string, prefs: TravelPreferences): void {
     const toMatch = text.match(
-      /(?:^|\s)(?:в|на|до)\s+([а-яё\-]+(?:\s+[а-яё\-]+)?)/i,
+      /(?:^|\s)(?:(?:хочу|еду|лечу|планирую|направляюсь|собираюсь)\s+(?:поехать\s+)?)?(?:в|на|до)\s+([а-яё\-]+(?:\s+[а-яё\-]+)?)/i,
     );
     const candidates = [toMatch?.[1]?.toLowerCase(), text];
 
@@ -313,11 +314,15 @@ export class IntentParserService {
 
   private extractOrigin(text: string, prefs: TravelPreferences): void {
     const fromMatch = text.match(
-      /(?:^|\s)(?:из|откуда|вылет\s+из|ехать\s+из)\s+([а-яё\-\s.]+?)(?:\s+(?:в|на|до)\s|[,.\n]|$)/i,
+      /(?:^|\s)(?:я\s+)?(?:из|откуда|вылет(?:ом)?\s+из|ехать\s+из|выезжа(?:ю|ем)\s+из)\s+(.+?)(?=\s+(?:хочу|еду|лет(?:им|еть|ю|им)?|планиру|нужно|собира|поед|направля|\d{1,2}\.\d|\d+\s*(?:руб|₽)|(?:в|на|до)\s)|,\s*(?:в|на|до)\s|$)/i,
     );
-    const originPhrase = fromMatch?.[1]?.trim() ?? text;
 
-    const graphNode = resolveRouteNode(originPhrase);
+    if (!fromMatch) return;
+
+    const rawOrigin = this.normalizePlacePhrase(fromMatch[1]);
+    const originLower = rawOrigin.toLowerCase();
+
+    const graphNode = resolveRouteNode(rawOrigin);
     if (graphNode) {
       prefs.origin = graphNode.name;
       prefs.originHasAirport = Boolean(graphNode.airportCode) && graphNode.kind !== 'settlement';
@@ -325,16 +330,37 @@ export class IntentParserService {
       return;
     }
 
-    for (const candidate of [originPhrase.toLowerCase(), text]) {
-      for (const [key, info] of Object.entries(ORIGIN_CITY_MAP)) {
-        if (candidate.includes(key)) {
-          prefs.origin = info.name;
-          prefs.originHasAirport = info.hasAirport;
-          prefs.originCode = getFlightOriginCode(info);
-          return;
-        }
+    for (const [key, info] of Object.entries(ORIGIN_CITY_MAP)) {
+      if (this.isDestinationAlias(key, prefs)) continue;
+      if (originLower.includes(key)) {
+        prefs.origin = info.name;
+        prefs.originHasAirport = info.hasAirport;
+        prefs.originCode = getFlightOriginCode(info);
+        return;
       }
     }
+
+    // Неизвестный населённый пункт — оставляем как есть для геокодинга
+    prefs.origin = rawOrigin;
+    delete prefs.originCode;
+    delete prefs.originHasAirport;
+  }
+
+  private normalizePlacePhrase(phrase: string): string {
+    const trimmed = phrase.trim().replace(/\s+/g, ' ');
+    if (!trimmed) return trimmed;
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  }
+
+  private isDestinationAlias(key: string, prefs: TravelPreferences): boolean {
+    if (prefs.destination?.toLowerCase().includes(key)) return true;
+    if (!prefs.destinationCode) return false;
+    for (const dest of Object.values(DESTINATION_MAP)) {
+      if (dest.code === prefs.destinationCode && dest.name.toLowerCase().includes(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private extractTravelers(text: string, prefs: TravelPreferences): void {
