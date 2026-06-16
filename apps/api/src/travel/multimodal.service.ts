@@ -114,6 +114,10 @@ export class MultimodalService {
     const origin = await this.resolveOriginAsync(preferences);
     if (!origin) return [];
 
+    if (this.isSameCityTrip(origin.name, destinationName, destinationCode, preferences)) {
+      return this.buildSameCityGroundRoutes(origin, destinationName, direction);
+    }
+
     const date = direction === 'outbound' ? dateFrom : dateTo;
     const isInternational = !this.isDomesticCode(destinationCode);
 
@@ -796,6 +800,33 @@ export class MultimodalService {
   private isDomesticCode(code: string): boolean {
     const domestic = ['MOW', 'LED', 'AER', 'KRR', 'ROV', 'KZN', 'GOJ', 'SVX', 'OVB', 'KGD', 'VOZ'];
     return domestic.includes(code);
+  }
+
+  private isSameCityTrip(
+    originName: string,
+    destinationName: string,
+    destinationCode: string,
+    preferences: TravelPreferences,
+  ): boolean {
+    const originKey = originName.toLowerCase();
+    const destKey = destinationName.toLowerCase();
+    if (originKey === destKey) return true;
+    if (
+      destinationCode === 'MOW' &&
+      destKey.includes('москв') &&
+      (originKey.includes('москв') || preferences.originCode === 'MOW')
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  private buildSameCityGroundRoutes(
+    origin: ResolvedOrigin,
+    destinationName: string,
+    direction: 'outbound' | 'inbound',
+  ): Promise<TransportRoute[]> {
+    return Promise.resolve([]);
   }
 }
 
