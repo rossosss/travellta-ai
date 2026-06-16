@@ -18,7 +18,7 @@ echo "==> build"
 npm run build
 
 echo "==> postgres"
-docker compose up -d
+docker-compose up -d
 
 echo "==> pm2 restart"
 pm2 restart travellta-api travellta-web
