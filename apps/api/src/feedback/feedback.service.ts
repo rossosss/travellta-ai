@@ -63,7 +63,7 @@ export class FeedbackService {
 
     if (dto.status !== undefined) row.status = dto.status;
     if (dto.adminNote !== undefined) {
-      row.adminNote = dto.adminNote.trim() || null;
+      row.adminNote = dto.adminNote.trim() || undefined;
     }
 
     const saved = await this.feedbackRepo.save(row);
