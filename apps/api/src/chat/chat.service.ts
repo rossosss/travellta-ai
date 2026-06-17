@@ -5,7 +5,7 @@ import { IntentParserService } from '../ai/intent-parser.service';
 import { ChatSession } from '../entities/chat-session.entity';
 import { Message } from '../entities/message.entity';
 import { User } from '../entities/user.entity';
-import { AppAuthContext } from '../auth/web-auth.guard';
+import { AppAuthContext } from '../auth/auth.types';
 import { TravelService } from '../travel/travel.service';
 import { TravelPreferences } from '../travel/travel.types';
 
