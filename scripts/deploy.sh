@@ -18,7 +18,13 @@ echo "==> build"
 npm run build
 
 echo "==> postgres"
-docker-compose up -d
+if docker ps --format '{{.Names}}' | grep -qx travellta-postgres; then
+  echo "Postgres already running — skip recreate (avoids docker-compose 1.x ContainerConfig bug)"
+elif command -v docker >/dev/null && docker compose version >/dev/null 2>&1; then
+  docker compose up -d postgres
+else
+  docker-compose up -d postgres
+fi
 
 echo "==> pm2 restart"
 pm2 restart travellta-api travellta-web

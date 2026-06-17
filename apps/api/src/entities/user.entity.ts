@@ -18,11 +18,11 @@ export class User {
   @Column({ unique: true })
   telegramId: string;
 
-  @Column({ unique: true, nullable: true })
-  email: string | null;
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
+  email?: string;
 
-  @Column({ nullable: true })
-  passwordHash: string | null;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  passwordHash?: string;
 
   @Column({ type: 'varchar', length: 16, default: 'user' })
   role: UserRole;

@@ -39,7 +39,7 @@ export class Feedback {
   status: FeedbackStatus;
 
   @Column({ type: 'text', nullable: true })
-  adminNote: string | null;
+  adminNote?: string;
 
   @CreateDateColumn()
   createdAt: Date;
