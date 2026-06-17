@@ -1,6 +1,6 @@
+import { getGuestId } from '@/lib/guest-id';
 import type { ChatMessage } from '@/types/chat';
 
-/** Базовый URL API: в TG Mini App всегда текущий домен, если env не задан или localhost */
 function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const env = process.env.NEXT_PUBLIC_API_URL;
@@ -18,10 +18,16 @@ function getInitData(): string {
 }
 
 function getHeaders(): HeadersInit {
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Telegram-Init-Data': getInitData(),
   };
+  const initData = getInitData();
+  if (initData) {
+    headers['X-Telegram-Init-Data'] = initData;
+  } else {
+    headers['X-Guest-Id'] = getGuestId();
+  }
+  return headers;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -39,7 +45,25 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+export interface FeedbackPayload {
+  name?: string;
+  email?: string;
+  audienceType: string;
+  travelFrequency?: string;
+  painPoint?: string;
+  wish?: string;
+  contactOk?: boolean;
+  source?: string;
+}
+
 export const api = {
+  sendFeedback(payload: FeedbackPayload) {
+    return request<{ ok: true; id: string }>('/feedback', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
   sendMessage(content: string, sessionId?: string) {
     return request<{ sessionId: string; message: ChatMessage }>('/chat/message', {
       method: 'POST',

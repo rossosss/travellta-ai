@@ -8,6 +8,7 @@ import { TelegramModule } from '../telegram/telegram.module';
 import { TravelModule } from '../travel/travel.module';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
+import { WebAuthGuard } from '../auth/web-auth.guard';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { ChatService } from './chat.service';
     AiModule,
   ],
   controllers: [ChatController],
-  providers: [ChatService],
+  providers: [ChatService, WebAuthGuard],
 })
 export class ChatModule {}

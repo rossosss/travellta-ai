@@ -5,7 +5,7 @@ import { IntentParserService } from '../ai/intent-parser.service';
 import { ChatSession } from '../entities/chat-session.entity';
 import { Message } from '../entities/message.entity';
 import { User } from '../entities/user.entity';
-import { TelegramUser } from '../telegram/telegram.service';
+import { AppAuthContext } from '../auth/web-auth.guard';
 import { TravelService } from '../travel/travel.service';
 import { TravelPreferences } from '../travel/travel.types';
 
@@ -22,18 +22,19 @@ export class ChatService {
     private readonly travelService: TravelService,
   ) {}
 
-  async getOrCreateUser(telegramUser: TelegramUser): Promise<User> {
+  async getOrCreateUser(auth: AppAuthContext): Promise<User> {
+    const telegramId = auth.userKey;
     let user = await this.usersRepo.findOne({
-      where: { telegramId: String(telegramUser.id) },
+      where: { telegramId },
     });
 
     if (!user) {
       user = this.usersRepo.create({
-        telegramId: String(telegramUser.id),
-        firstName: telegramUser.first_name,
-        lastName: telegramUser.last_name,
-        username: telegramUser.username,
-        languageCode: telegramUser.language_code,
+        telegramId,
+        firstName: auth.telegramUser.first_name,
+        lastName: auth.telegramUser.last_name,
+        username: auth.telegramUser.username,
+        languageCode: auth.telegramUser.language_code,
       });
       await this.usersRepo.save(user);
     }
@@ -160,12 +161,12 @@ export class ChatService {
   }
 
   async processMessage(
-    telegramUser: TelegramUser,
+    auth: AppAuthContext,
     content: string,
     sessionId?: string,
     mode?: 'chat' | 'lucky',
   ) {
-    const user = await this.getOrCreateUser(telegramUser);
+    const user = await this.getOrCreateUser(auth);
     const session = await this.getOrCreateSession(user.id, sessionId, mode);
 
     await this.saveMessage(session.id, 'user', 'text', content);
@@ -269,12 +270,12 @@ export class ChatService {
   }
 
   async processLuckyAnswer(
-    telegramUser: TelegramUser,
+    auth: AppAuthContext,
     sessionId: string,
     questionId: string,
     answer: string,
   ) {
-    const user = await this.getOrCreateUser(telegramUser);
+    const user = await this.getOrCreateUser(auth);
     const session = await this.sessionsRepo.findOne({
       where: { id: sessionId, userId: user.id },
     });

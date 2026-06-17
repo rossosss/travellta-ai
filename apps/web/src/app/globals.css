@@ -132,3 +132,13 @@
 .pb-safe {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
+
+.landing-hero-bg {
+  background:
+    linear-gradient(135deg, oklch(0.97 0.03 280) 0%, oklch(0.98 0.02 220) 40%, oklch(0.96 0.04 200) 100%);
+}
+
+.dark .landing-hero-bg {
+  background:
+    linear-gradient(135deg, oklch(0.18 0.04 280) 0%, oklch(0.14 0.02 240) 50%, oklch(0.16 0.05 200) 100%);
+}

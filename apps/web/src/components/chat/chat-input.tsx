@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useTelegram } from '@/components/telegram-provider';
 import { Send, Sparkles } from 'lucide-react';
 import { useRef, useState } from 'react';
 
@@ -17,16 +16,14 @@ export function ChatInput({
   onSend,
   onLucky,
   disabled,
-  placeholder = 'Опишите ваш идеальный отпуск...',
+  placeholder = 'Откуда и куда? Например: из Егорлыка в Москву 25.06–28.06',
 }: ChatInputProps) {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { haptic } = useTelegram();
 
   const handleSend = () => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
-    haptic('light');
     onSend(trimmed);
     setValue('');
     textareaRef.current?.focus();
@@ -45,10 +42,7 @@ export function ChatInput({
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => {
-          haptic('medium');
-          onLucky();
-        }}
+        onClick={onLucky}
         disabled={disabled}
         className="w-full rounded-full border-dashed border-primary/40 text-primary hover:bg-primary/5 gap-2"
       >
