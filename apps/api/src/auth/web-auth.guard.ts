@@ -5,30 +5,29 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TelegramService, TelegramUser } from '../telegram/telegram.service';
+import { TelegramService } from '../telegram/telegram.service';
+import { AuthService } from './auth.service';
+import { AppAuthContext } from './auth.types';
 
 const GUEST_ID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-export interface AppAuthContext {
-  telegramUser: TelegramUser;
-  /** Для веб-гостей: web:{uuid}, иначе tg id */
-  userKey: string;
-}
 
 @Injectable()
 export class WebAuthGuard implements CanActivate {
   private readonly logger = new Logger(WebAuthGuard.name);
 
-  constructor(private readonly telegram: TelegramService) {}
+  constructor(
+    private readonly telegram: TelegramService,
+    private readonly authService: AuthService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const initData =
       request.headers['x-telegram-init-data'] ??
-      request.headers['authorization']?.replace('tma ', '');
+      request.headers['authorization']?.replace(/^tma /i, '');
 
-    if (initData) {
+    if (initData && !String(initData).startsWith('eyJ')) {
       try {
         const telegramUser = this.telegram.validateInitData(initData);
         request.auth = {
@@ -39,6 +38,15 @@ export class WebAuthGuard implements CanActivate {
       } catch (error) {
         const msg = error instanceof Error ? error.message : 'unknown';
         this.logger.warn(`Telegram auth failed: ${msg}`);
+      }
+    }
+
+    const bearer = this.extractBearer(request.headers.authorization);
+    if (bearer) {
+      const user = await this.authService.validateJwt(bearer);
+      if (user) {
+        request.auth = this.authService.buildAuthContext(user);
+        return true;
       }
     }
 
@@ -69,6 +77,12 @@ export class WebAuthGuard implements CanActivate {
     }
 
     throw new UnauthorizedException('Authentication required');
+  }
+
+  private extractBearer(header?: string): string | null {
+    if (!header?.startsWith('Bearer ')) return null;
+    const token = header.slice(7).trim();
+    return token || null;
   }
 
   private guestNumericId(guestId: string): number {

@@ -7,7 +7,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AppAuthContext, WebAuthGuard } from '../auth/web-auth.guard';
+import { AppAuthContext } from '../auth/auth.types';
+import { WebAuthGuard } from '../auth/web-auth.guard';
 import { ChatService } from './chat.service';
 import { LuckyAnswerDto, SendMessageDto, StartLuckyDto } from './dto/chat.dto';
 

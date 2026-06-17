@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
+export type FeedbackStatus = 'new' | 'in_progress' | 'done';
 
 @Entity('feedback')
 export class Feedback {
@@ -33,6 +35,15 @@ export class Feedback {
   @Column({ nullable: true })
   source: string;
 
+  @Column({ type: 'varchar', length: 20, default: 'new' })
+  status: FeedbackStatus;
+
+  @Column({ type: 'text', nullable: true })
+  adminNote: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

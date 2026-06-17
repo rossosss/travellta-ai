@@ -37,7 +37,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-border/60 bg-background/80 backdrop-blur-xl p-3 lg:p-4 pb-safe">
+    <div className="shrink-0 border-t border-border/60 bg-background/80 backdrop-blur-xl p-3 lg:p-4 pb-safe">
       <div className="max-w-5xl mx-auto w-full space-y-2 lg:space-y-3">
         <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-3">
           <Button

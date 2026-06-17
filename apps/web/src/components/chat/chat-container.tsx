@@ -6,8 +6,10 @@ import { ChatInput } from '@/components/chat/chat-input';
 import { MessageBubble } from '@/components/chat/message-bubble';
 import { PopularRoutes } from '@/components/chat/popular-routes';
 import { api } from '@/lib/api';
+import { clearAuthToken, getAuthToken } from '@/lib/auth-token';
+import type { AuthUser } from '@/types/auth';
 import type { ChatMessage, ChatSessionSummary, PopularRoute } from '@/types/chat';
-import { Compass, History, Home } from 'lucide-react';
+import { Compass, History, Home, LogIn, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -36,10 +38,15 @@ export function ChatContainer() {
   const [popularRoutes, setPopularRoutes] = useState<PopularRoute[]>([]);
   const [loading, setLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback((smooth = true) => {
-    bottomRef.current?.scrollIntoView({
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({
+      top: el.scrollHeight,
       behavior: smooth ? 'smooth' : 'instant',
     });
   }, []);
@@ -78,6 +85,13 @@ export function ChatContainer() {
           })(),
         ]);
         setPopularRoutes(routesData.routes);
+        if (getAuthToken()) {
+          try {
+            setAuthUser(await api.me());
+          } catch {
+            clearAuthToken();
+          }
+        }
       } catch {
         /* ignore */
       } finally {
@@ -217,8 +231,8 @@ export function ChatContainer() {
   const showHome = !hasUserMessages;
 
   return (
-    <div className="flex flex-1 min-h-0 h-full lg:flex-row">
-      <aside className="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 lg:shrink-0 lg:border-r lg:border-border/40 lg:bg-muted/20">
+    <div className="flex flex-1 min-h-0 overflow-hidden lg:flex-row">
+      <aside className="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 lg:shrink-0 lg:min-h-0 lg:overflow-hidden lg:border-r lg:border-border/40 lg:bg-muted/20">
         <ChatHistoryPanel
           sessions={sessionList}
           activeSessionId={sessionId}
@@ -228,7 +242,7 @@ export function ChatContainer() {
         />
       </aside>
 
-      <div className="flex flex-col flex-1 min-h-0 min-w-0">
+      <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden">
         <ChatHistorySheet
           open={historyOpen}
           onOpenChange={setHistoryOpen}
@@ -274,10 +288,46 @@ export function ChatContainer() {
             >
               На главную
             </Link>
+            {authUser ? (
+              <div className="flex items-center gap-1 shrink-0">
+                {authUser.role === 'admin' && (
+                  <Link
+                    href="/admin/feedback"
+                    className="hidden sm:inline text-xs text-primary hover:underline px-2"
+                  >
+                    Админка
+                  </Link>
+                )}
+                <span className="hidden sm:inline text-xs text-muted-foreground max-w-[120px] truncate px-1">
+                  {authUser.email}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearAuthToken();
+                    setAuthUser(null);
+                    window.location.reload();
+                  }}
+                  className="p-2 rounded-xl hover:bg-muted/60 transition-colors"
+                  aria-label="Выйти"
+                >
+                  <LogOut className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login?next=/chat"
+                className="p-2 rounded-xl hover:bg-muted/60 transition-colors shrink-0"
+                aria-label="Войти"
+              >
+                <LogIn className="w-5 h-5 text-muted-foreground" />
+              </Link>
+            )}
           </div>
         </header>
 
         <div
+          ref={scrollRef}
           className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 lg:px-6 touch-pan-y"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >

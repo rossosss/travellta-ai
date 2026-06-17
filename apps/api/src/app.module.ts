@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AiModule } from './ai/ai.module';
+import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { Feedback } from './entities/feedback.entity';
 import { GeocodeCache } from './entities/geocode-cache.entity';
@@ -29,6 +30,7 @@ import { TravelModule } from './travel/travel.module';
       }),
     }),
     TelegramModule,
+    AuthModule,
     TravelModule,
     AiModule,
     ChatModule,
