@@ -75,7 +75,7 @@ export function LandingPage() {
                 до курорта — одним маршрутом
               </h1>
               <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
-                {siteConfig.tagline}. Travellta строит путь из вашего посёлка или города:
+                {siteConfig.tagline}. Travellta строит путь из вашего города:
                 автобус, поезд, перелёт — с удобными стыковками и понятной ценой.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -113,12 +113,12 @@ export function LandingPage() {
                 </p>
                 <div className="flex items-center gap-2 flex-wrap text-sm font-medium">
                   <span className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
-                    пос. Целина
+                    Москва
                   </span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="px-3 py-1.5 rounded-full bg-orange-100 text-orange-900 dark:bg-orange-900/40">Ростов</span>
+                  <span className="px-3 py-1.5 rounded-full bg-orange-100 text-orange-900 dark:bg-orange-900/40">Питер</span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-900 dark:bg-blue-900/40">Москва</span>
+                  <span className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-900 dark:bg-blue-900/40">Стамбул</span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
                   <span className="px-3 py-1.5 rounded-full bg-cyan-100 text-cyan-900 dark:bg-cyan-900/40">Пхукет ✈️</span>
                 </div>
@@ -158,7 +158,7 @@ export function LandingPage() {
                 step: '01',
                 icon: MessageSquare,
                 title: 'Опишите поездку',
-                text: '«Из Егорлыка в Москву 25.06–28.06» или «с пос. Целина на Пхукет»',
+                text: '«Из Москвы в Сочи 25.06–28.06» или «из Питера на Пхукет»',
                 color: 'from-violet-500 to-purple-600',
               },
               {

@@ -142,7 +142,7 @@ export function FeedbackForm() {
           id="wish"
           value={wish}
           onChange={(e) => setWish(e.target.value)}
-          placeholder="Идеальный сценарий: написал «из Егорлыка в Москву» — получил маршрут..."
+          placeholder="Идеальный сценарий: написал «из Москвы в Сочи» — получил маршрут..."
           rows={3}
           className="rounded-xl bg-background/80 resize-none"
         />
