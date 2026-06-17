@@ -1,5 +1,6 @@
 'use client';
 
+import { ChatHistoryPanel } from '@/components/chat/chat-history-panel';
 import { ChatHistorySheet } from '@/components/chat/chat-history-sheet';
 import { ChatInput } from '@/components/chat/chat-input';
 import { MessageBubble } from '@/components/chat/message-bubble';
@@ -17,13 +18,13 @@ const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant',
   type: 'text',
   content:
-    'Привет! 👋 Я навигатор отдыха — построю путь от вашего дома до курорта: автобус, поезд, перелёт. Напишите откуда и куда, например: «Из Егорлыка в Москву 25.06–28.06».',
+    'Привет! 👋 Я навигатор отдыха — построю путь от вашего дома до курорта: автобус, поезд, перелёт. Напишите откуда и куда, например: «Из Москвы в Сочи 25.06–28.06».',
 };
 
 const SUGGESTIONS = [
   'Из Москвы на выходные в Питер, бюджет 30 000 ₽',
-  'Из Ярославля в Сочи в июле, бюджет 80 000 ₽',
-  'Из пос. Целина на Пхукет, бюджет 150 000 ₽',
+  'Из Санкт-Петербурга в Сочи в июле, бюджет 80 000 ₽',
+  'Из Москвы на Пхукет, бюджет 150 000 ₽',
 ];
 
 export function ChatContainer() {
@@ -216,85 +217,107 @@ export function ChatContainer() {
   const showHome = !hasUserMessages;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 h-full">
-      <ChatHistorySheet
-        open={historyOpen}
-        onOpenChange={setHistoryOpen}
-        sessions={sessionList}
-        activeSessionId={sessionId}
-        onSelectSession={loadSession}
-        onNewChat={handleNewChat}
-        loading={sessionsLoading}
-      />
+    <div className="flex flex-1 min-h-0 h-full lg:flex-row">
+      <aside className="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 lg:shrink-0 lg:border-r lg:border-border/40 lg:bg-muted/20">
+        <ChatHistoryPanel
+          sessions={sessionList}
+          activeSessionId={sessionId}
+          onSelectSession={loadSession}
+          onNewChat={handleNewChat}
+          loading={sessionsLoading}
+        />
+      </aside>
 
-      <header className="shrink-0 px-4 py-3 border-b border-border/40 bg-background/60 backdrop-blur-xl z-10">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="p-2 rounded-xl hover:bg-muted/60 transition-colors"
-            aria-label="На главную"
-          >
-            <Home className="w-5 h-5 text-muted-foreground" />
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setHistoryOpen(true);
-              refreshSessionList();
-            }}
-            className="p-2 rounded-xl hover:bg-muted/60 transition-colors"
-            aria-label="История чатов"
-          >
-            <History className="w-5 h-5 text-muted-foreground" />
-          </button>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-600 to-cyan-400 flex items-center justify-center shadow-md shrink-0">
-            <Compass className="w-4 h-4 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-semibold text-sm leading-tight">Навигатор</h1>
-            <p className="text-xs text-muted-foreground truncate">Travellta · AI-маршруты</p>
-          </div>
-        </div>
-      </header>
+      <div className="flex flex-col flex-1 min-h-0 min-w-0">
+        <ChatHistorySheet
+          open={historyOpen}
+          onOpenChange={setHistoryOpen}
+          sessions={sessionList}
+          activeSessionId={sessionId}
+          onSelectSession={loadSession}
+          onNewChat={handleNewChat}
+          loading={sessionsLoading}
+        />
 
-      <div
-        className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 touch-pan-y"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        <div className="py-4 space-y-4 pb-2">
-          {messages.map((msg) => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              onOptionSelect={handleOptionSelect}
-            />
-          ))}
-
-          {showHome && (
-            <div className="flex flex-col gap-4 pt-1">
-              <PopularRoutes routes={popularRoutes} onSelect={handleSend} disabled={loading} />
-              <div className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground px-1">Или напишите:</p>
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => handleSend(s)}
-                    disabled={loading}
-                    className="text-left text-xs px-3 py-2.5 rounded-xl bg-muted/60 hover:bg-muted transition-colors text-muted-foreground border border-border/40"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+        <header className="sticky top-0 shrink-0 px-4 lg:px-6 pb-3 pt-safe lg:pt-4 border-b border-border/40 bg-background/95 backdrop-blur-xl z-20">
+          <div className="flex items-center gap-2 lg:gap-3 max-w-5xl mx-auto w-full">
+            <Link
+              href="/"
+              className="p-2 rounded-xl hover:bg-muted/60 transition-colors"
+              aria-label="На главную"
+            >
+              <Home className="w-5 h-5 text-muted-foreground" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setHistoryOpen(true);
+                refreshSessionList();
+              }}
+              className="p-2 rounded-xl hover:bg-muted/60 transition-colors lg:hidden"
+              aria-label="История чатов"
+            >
+              <History className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-violet-600 to-cyan-400 flex items-center justify-center shadow-md shrink-0">
+              <Compass className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
             </div>
-          )}
+            <div className="flex-1 min-w-0">
+              <h1 className="font-semibold text-sm lg:text-base leading-tight">Навигатор</h1>
+              <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                Travellta · AI-маршруты
+              </p>
+            </div>
+            <Link
+              href="/"
+              className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              На главную
+            </Link>
+          </div>
+        </header>
 
-          <div ref={bottomRef} />
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 lg:px-6 touch-pan-y"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="py-4 lg:py-6 space-y-4 lg:space-y-5 pb-2 max-w-5xl mx-auto w-full">
+            {messages.map((msg) => (
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                onOptionSelect={handleOptionSelect}
+              />
+            ))}
+
+            {showHome && (
+              <div className="flex flex-col gap-4 lg:gap-6 pt-1">
+                <PopularRoutes routes={popularRoutes} onSelect={handleSend} disabled={loading} />
+                <div className="flex flex-col gap-2 lg:gap-3">
+                  <p className="text-xs lg:text-sm text-muted-foreground px-1">Или напишите:</p>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {SUGGESTIONS.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => handleSend(s)}
+                        disabled={loading}
+                        className="text-left text-xs lg:text-sm px-3 py-2.5 lg:px-4 lg:py-3 rounded-xl bg-muted/60 hover:bg-muted transition-colors text-muted-foreground border border-border/40"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={bottomRef} />
+          </div>
         </div>
-      </div>
 
-      <ChatInput onSend={handleSend} onLucky={handleLucky} disabled={loading} />
+        <ChatInput onSend={handleSend} onLucky={handleLucky} disabled={loading} />
+      </div>
     </div>
   );
 }

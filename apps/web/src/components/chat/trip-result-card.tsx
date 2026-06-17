@@ -126,29 +126,29 @@ function LegTimeline({ leg }: { leg: TransportLeg }) {
   const arr = formatDateTime(leg.arrivalAt);
 
   return (
-    <div className="flex gap-2.5 py-2 border-l-2 border-primary/20 ml-1.5 pl-3 relative">
+    <div className="flex gap-2.5 lg:gap-3 py-2 lg:py-2.5 border-l-2 border-primary/20 ml-1.5 pl-3 relative">
       <div className="absolute -left-[5px] top-3 w-2 h-2 rounded-full bg-primary/60" />
-      <Icon className="w-3.5 h-3.5 shrink-0 text-muted-foreground mt-0.5" />
+      <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 shrink-0 text-muted-foreground mt-0.5" />
       <div className="flex-1 min-w-0 space-y-0.5">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] font-medium text-primary/80 uppercase tracking-wide">
+          <span className="text-[10px] lg:text-xs font-medium text-primary/80 uppercase tracking-wide">
             {legModeLabel(leg.mode)}
           </span>
           {leg.convenience && <ConvenienceStars score={leg.convenience} />}
         </div>
-        <p className="text-xs font-medium leading-snug">
+        <p className="text-xs lg:text-sm font-medium leading-snug">
           {leg.from} → {leg.to}
         </p>
-        <p className="text-[10px] text-muted-foreground leading-snug">{leg.description}</p>
+        <p className="text-[10px] lg:text-xs text-muted-foreground leading-snug">{leg.description}</p>
         {leg.note && (
-          <p className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded px-1.5 py-0.5">
+          <p className="text-[10px] lg:text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded px-1.5 py-0.5">
             {leg.note}
           </p>
         )}
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] lg:text-xs text-muted-foreground">
           {dep && (
             <span className="flex items-center gap-0.5">
-              <Clock className="w-2.5 h-2.5" />
+              <Clock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
               {dep}
               {arr && ` → ${arr}`}
             </span>
@@ -158,14 +158,14 @@ function LegTimeline({ leg }: { leg: TransportLeg }) {
           {leg.scheduleHint && <span className="italic">{leg.scheduleHint}</span>}
         </div>
         <div className="flex items-center justify-between pt-0.5">
-          <span className="text-xs font-semibold text-primary">{formatPrice(leg.price)}</span>
+          <span className="text-xs lg:text-sm font-semibold text-primary">{formatPrice(leg.price)}</span>
           <a
             href={leg.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-[10px] lg:text-xs text-primary hover:underline"
           >
-            Купить <ExternalLink className="w-2.5 h-2.5" />
+            Купить <ExternalLink className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
           </a>
         </div>
       </div>
@@ -208,13 +208,13 @@ function RouteCard({
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full text-left p-2.5 flex items-start justify-between gap-2 hover:bg-muted/50 transition-colors"
+        className="w-full text-left p-2.5 lg:p-3.5 flex items-start justify-between gap-2 hover:bg-muted/50 transition-colors"
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="text-xs font-medium">{route.label}</p>
+            <p className="text-xs lg:text-sm font-medium">{route.label}</p>
             {route.tag && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">
+              <Badge variant="outline" className="text-[9px] lg:text-[10px] px-1.5 py-0 h-4">
                 {tagLabel(route.tag)}
               </Badge>
             )}
@@ -222,17 +222,17 @@ function RouteCard({
               <ConvenienceStars score={route.convenienceScore} />
             )}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+          <p className="text-[10px] lg:text-xs text-muted-foreground mt-0.5 leading-snug line-clamp-2">
             {route.summary}
           </p>
-          <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 mt-1 text-[10px] lg:text-xs text-muted-foreground">
             <span>{route.legs.length} участков</span>
             <span>·</span>
             <span>~{formatDuration(route.totalDuration)}</span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs font-semibold text-primary">
+          <span className="text-xs lg:text-sm font-semibold text-primary">
             {formatPrice(route.totalPrice, route.currency)}
           </span>
           {expanded ? (
@@ -269,9 +269,9 @@ function RouteNavigator({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground">{title}</p>
+        <p className="text-xs lg:text-sm font-medium text-muted-foreground">{title}</p>
         {routes.length > 1 && (
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[10px] lg:text-xs text-muted-foreground">
             {routes.length} вариант{routes.length > 4 ? 'ов' : routes.length > 1 ? 'а' : ''}
           </span>
         )}
@@ -300,8 +300,8 @@ function RouteNavigator({
 
 export function TripResultCard({ trip }: TripResultCardProps) {
   return (
-    <Card className="overflow-hidden border-0 shadow-lg bg-card/95 backdrop-blur-sm">
-      <div className="relative h-40 w-full">
+    <Card className="overflow-hidden border-0 shadow-lg bg-card/95 backdrop-blur-sm h-full flex flex-col">
+      <div className="relative h-40 lg:h-48 w-full shrink-0">
         <Image
           src={trip.imageUrl}
           alt={trip.title}
@@ -310,41 +310,43 @@ export function TripResultCard({ trip }: TripResultCardProps) {
           unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute bottom-3 left-3 right-3">
-          <h3 className="text-white font-semibold text-lg">{trip.title}</h3>
-          <p className="text-white/80 text-xs mt-0.5">{trip.description}</p>
+        <div className="absolute bottom-3 left-3 right-3 lg:bottom-4 lg:left-4 lg:right-4">
+          <h3 className="text-white font-semibold text-lg lg:text-xl">{trip.title}</h3>
+          <p className="text-white/80 text-xs lg:text-sm mt-0.5">{trip.description}</p>
         </div>
       </div>
 
-      <CardContent className="p-4 space-y-4">
+      <CardContent className="p-4 lg:p-5 space-y-4 lg:space-y-5 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-xs text-muted-foreground space-y-0.5">
+          <div className="text-xs lg:text-sm text-muted-foreground space-y-0.5">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
               {formatDate(trip.dateFrom)} — {formatDate(trip.dateTo)}
             </div>
             <p>Из: {trip.originCity}</p>
           </div>
-          <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 shrink-0">
+          <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 shrink-0 text-xs lg:text-sm">
             {formatPrice(trip.totalPrice, trip.currency)}
           </Badge>
         </div>
 
         {trip.transportNote && (
-          <p className="text-[11px] text-primary/90 bg-primary/5 rounded-lg px-2.5 py-2 leading-snug">
+          <p className="text-[11px] lg:text-sm text-primary/90 bg-primary/5 rounded-lg px-2.5 py-2 lg:px-3 lg:py-2.5 leading-snug">
             {trip.transportNote}
           </p>
         )}
 
-        <RouteNavigator title="🧭 Маршрут туда" routes={trip.outboundRoutes} />
-        <RouteNavigator title="🧭 Маршрут обратно" routes={trip.inboundRoutes} />
+        <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+          <RouteNavigator title="🧭 Маршрут туда" routes={trip.outboundRoutes} />
+          <RouteNavigator title="🧭 Маршрут обратно" routes={trip.inboundRoutes} />
+        </div>
 
-        <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-muted/50">
-          <Hotel className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2.5 p-2.5 lg:p-3 rounded-xl bg-muted/50">
+          <Hotel className="w-4 h-4 lg:w-5 lg:h-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{trip.hotel.name}</p>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <p className="text-xs lg:text-sm font-medium truncate">{trip.hotel.name}</p>
+            <div className="flex items-center gap-1 text-xs lg:text-sm text-muted-foreground">
+              <Star className="w-3 h-3 lg:w-3.5 lg:h-3.5 fill-amber-400 text-amber-400" />
               {trip.hotel.rating} · {formatPrice(trip.hotel.totalPrice, 'RUB')}
             </div>
           </div>
@@ -352,22 +354,22 @@ export function TripResultCard({ trip }: TripResultCardProps) {
             href={trip.hotel.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent shrink-0"
+            className="inline-flex items-center justify-center h-7 w-7 lg:h-8 lg:w-8 rounded-md hover:bg-accent shrink-0"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
           </a>
         </div>
 
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
+          <p className="text-xs lg:text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+            <MapPin className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
             Что посмотреть
           </p>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 lg:gap-2">
             {trip.categories.map((cat) => (
               <span
                 key={cat.id}
-                className="text-xs px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground"
+                className="text-xs lg:text-sm px-2.5 py-1 lg:px-3 lg:py-1.5 rounded-full bg-secondary text-secondary-foreground"
               >
                 {cat.icon} {cat.name}
               </span>
@@ -375,9 +377,9 @@ export function TripResultCard({ trip }: TripResultCardProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 lg:gap-1.5">
           {trip.highlights.map((h) => (
-            <Badge key={h} variant="outline" className="text-[10px] font-normal">
+            <Badge key={h} variant="outline" className="text-[10px] lg:text-xs font-normal">
               {h}
             </Badge>
           ))}

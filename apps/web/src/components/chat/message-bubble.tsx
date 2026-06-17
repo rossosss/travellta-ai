@@ -12,13 +12,17 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
 
   if (message.type === 'trip_result' && message.metadata?.packages) {
     return (
-      <div className="flex flex-col gap-3 w-full">
+      <div className="flex flex-col gap-3 lg:gap-4 w-full">
         <div className="flex justify-start">
-          <div className="bg-card border border-border/60 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[85%] shadow-sm">
-            <p className="text-sm leading-relaxed">{message.content}</p>
+          <div className="bg-card border border-border/60 rounded-2xl rounded-bl-md px-4 py-2.5 lg:px-5 lg:py-3 max-w-[85%] lg:max-w-[70%] shadow-sm">
+            <p className="text-sm lg:text-base leading-relaxed">{message.content}</p>
           </div>
         </div>
-        <div className="flex flex-col gap-4">
+        <div
+          className={`grid gap-4 lg:gap-5 ${
+            message.metadata.packages.length > 1 ? 'lg:grid-cols-2' : 'lg:grid-cols-1'
+          }`}
+        >
           {message.metadata.packages.map((pkg) => (
             <TripResultCard key={pkg.id} trip={pkg} />
           ))}
@@ -31,8 +35,8 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
     const { question } = message.metadata;
     return (
       <div className="flex justify-start w-full">
-        <div className="bg-card border border-border/60 rounded-2xl rounded-bl-md px-4 py-3 max-w-[90%] shadow-sm">
-          <p className="text-sm font-medium mb-3">{message.content}</p>
+        <div className="bg-card border border-border/60 rounded-2xl rounded-bl-md px-4 py-3 lg:px-5 lg:py-4 max-w-[90%] lg:max-w-xl shadow-sm">
+          <p className="text-sm lg:text-base font-medium mb-3">{message.content}</p>
           <div className="flex flex-wrap gap-2">
             {question.options.map((option) => (
               <button
@@ -40,7 +44,7 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
                 type="button"
                 onClick={() => onOptionSelect?.(question.id, option)}
                 className={cn(
-                  'text-xs px-3 py-2 rounded-full',
+                  'text-xs lg:text-sm px-3 py-2 lg:px-4 lg:py-2.5 rounded-full',
                   'bg-primary/10 text-primary hover:bg-primary/20',
                   'transition-colors active:scale-95',
                   'border border-primary/20',
@@ -76,7 +80,7 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'rounded-2xl px-4 py-2.5 max-w-[85%] text-sm leading-relaxed shadow-sm',
+          'rounded-2xl px-4 py-2.5 lg:px-5 lg:py-3 max-w-[85%] lg:max-w-[65%] text-sm lg:text-base leading-relaxed shadow-sm',
           isUser
             ? 'bg-primary text-primary-foreground rounded-br-md'
             : 'bg-card border border-border/60 rounded-bl-md',
